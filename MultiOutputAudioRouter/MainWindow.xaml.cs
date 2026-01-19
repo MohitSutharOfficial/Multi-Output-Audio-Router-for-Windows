@@ -15,10 +15,12 @@ namespace MultiOutputAudioRouter
     {
         private AudioRouter? audioRouter;
         private List<DeviceCheckBox> deviceCheckBoxes = new List<DeviceCheckBox>();
+        private ConfigurationManager.Configuration configuration;
 
         public MainWindow()
         {
             InitializeComponent();
+            configuration = ConfigurationManager.LoadConfiguration();
             LoadAudioDevices();
         }
 
@@ -53,6 +55,12 @@ namespace MultiOutputAudioRouter
                         Margin = new Thickness(5),
                         Tag = device.ID
                     };
+
+                    // Restore previous selection from configuration
+                    if (configuration.SelectedDeviceIds.Contains(device.ID))
+                    {
+                        checkBox.IsChecked = true;
+                    }
 
                     deviceCheckBoxes.Add(new DeviceCheckBox
                     {
@@ -129,6 +137,9 @@ namespace MultiOutputAudioRouter
                     deviceCheckBox.CheckBox.IsEnabled = true;
                 }
 
+                // Save current device selection
+                SaveConfiguration();
+
                 UpdateStatus("Routing stopped");
             }
             catch (Exception ex)
@@ -136,6 +147,23 @@ namespace MultiOutputAudioRouter
                 MessageBox.Show($"Error stopping audio router: {ex.Message}", "Error", 
                     MessageBoxButton.OK, MessageBoxImage.Error);
                 UpdateStatus("Error stopping router");
+            }
+        }
+
+        private void SaveConfiguration()
+        {
+            try
+            {
+                configuration.SelectedDeviceIds = deviceCheckBoxes
+                    .Where(d => d.CheckBox.IsChecked == true)
+                    .Select(d => d.DeviceId)
+                    .ToList();
+
+                ConfigurationManager.SaveConfiguration(configuration);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Error saving configuration: {ex.Message}");
             }
         }
 
@@ -153,6 +181,7 @@ namespace MultiOutputAudioRouter
         {
             audioRouter?.Stop();
             audioRouter?.Dispose();
+            SaveConfiguration();
             base.OnClosed(e);
         }
 
