@@ -1,1 +1,0 @@
-Windows desktop application that captures system audio and duplicates it to multiple audio output devices simultaneously (speakers, earphones, Bluetooth headphones) — so you can watch movies on VLC and have the audio play on all connected devices without sharing physical earphones.
