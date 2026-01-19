@@ -1,0 +1,115 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [ main, master ]
+    tags:
+      - 'v*'
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Allows manual trigger from GitHub UI
+
+jobs:
+  build:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '6.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore MultiOutputAudioRouter.sln
+    
+    - name: Build
+      run: dotnet build MultiOutputAudioRouter.sln --configuration Release --no-restore
+    
+    # Build self-contained single-file executable (no .NET required to run)
+    - name: Publish Self-Contained Executable
+      run: |
+        dotnet publish MultiOutputAudioRouter/MultiOutputAudioRouter.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained true `
+          -p:PublishSingleFile=true `
+          -p:IncludeNativeLibrariesForSelfExtract=true `
+          -o ./publish/self-contained
+    
+    # Build framework-dependent version (smaller, requires .NET Runtime)
+    - name: Publish Framework-Dependent Executable
+      run: |
+        dotnet publish MultiOutputAudioRouter/MultiOutputAudioRouter.csproj `
+          -c Release `
+          -r win-x64 `
+          --self-contained false `
+          -p:PublishSingleFile=true `
+          -o ./publish/framework-dependent
+    
+    # Upload self-contained build as artifact
+    - name: Upload Self-Contained Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: MultiOutputAudioRouter-Standalone-win-x64
+        path: ./publish/self-contained/
+        retention-days: 30
+    
+    # Upload framework-dependent build as artifact
+    - name: Upload Framework-Dependent Build
+      uses: actions/upload-artifact@v4
+      with:
+        name: MultiOutputAudioRouter-Portable-win-x64
+        path: ./publish/framework-dependent/
+        retention-days: 30
+
+  # Create GitHub Release when a tag is pushed
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+    - name: Download Self-Contained Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: MultiOutputAudioRouter-Standalone-win-x64
+        path: ./standalone
+    
+    - name: Download Framework-Dependent Artifact
+      uses: actions/download-artifact@v4
+      with:
+        name: MultiOutputAudioRouter-Portable-win-x64
+        path: ./portable
+    
+    - name: Create ZIP files
+      run: |
+        cd standalone && zip -r ../MultiOutputAudioRouter-Standalone-win-x64.zip . && cd ..
+        cd portable && zip -r ../MultiOutputAudioRouter-Portable-win-x64.zip . && cd ..
+    
+    - name: Create Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          MultiOutputAudioRouter-Standalone-win-x64.zip
+          MultiOutputAudioRouter-Portable-win-x64.zip
+        body: |
+          ## Downloads
+          
+          ### 🎯 Standalone Version (Recommended)
+          **MultiOutputAudioRouter-Standalone-win-x64.zip**
+          - ✅ No installation required
+          - ✅ No .NET Runtime needed
+          - ✅ Just extract and run!
+          - 📦 Larger file size (~150 MB)
+          
+          ### 📦 Portable Version
+          **MultiOutputAudioRouter-Portable-win-x64.zip**
+          - ⚡ Smaller file size (~5 MB)
+          - ⚠️ Requires [.NET 6.0 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/6.0)
+        draft: false
+        prerelease: false
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
