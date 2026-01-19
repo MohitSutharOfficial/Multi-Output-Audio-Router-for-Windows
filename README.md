@@ -20,7 +20,7 @@ A Windows desktop application that captures system audio and duplicates it to mu
 ## Installation
 
 ### Option 1: Download Pre-built Binary (Recommended)
-1. Go to the [Releases](../../releases) page
+1. Go to the [Releases](https://github.com/MohitSutharOfficial/Multi-Output-Audio-Router-for-Windows/releases) page
 2. Download the latest `MultiOutputAudioRouter.zip`
 3. Extract the ZIP file to a folder of your choice
 4. Run `MultiOutputAudioRouter.exe`

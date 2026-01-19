@@ -15,8 +15,8 @@ namespace MultiOutputAudioRouter
     {
         private readonly List<string> targetDeviceIds;
         private WasapiLoopbackCapture? capture;
-        private List<WasapiOut> outputDevices = new List<WasapiOut>();
-        private List<BufferedWaveProvider> bufferProviders = new List<BufferedWaveProvider>();
+        private readonly List<WasapiOut> outputDevices = new List<WasapiOut>();
+        private readonly List<BufferedWaveProvider> bufferProviders = new List<BufferedWaveProvider>();
         private bool isRunning;
         private readonly object lockObject = new object();
 

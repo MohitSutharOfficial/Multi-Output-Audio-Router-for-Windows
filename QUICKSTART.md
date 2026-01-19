@@ -4,7 +4,7 @@
 
 ### Step 1: Download & Install
 
-1. Download the latest release from the [Releases](../../releases) page
+1. Download the latest release from the [Releases](https://github.com/MohitSutharOfficial/Multi-Output-Audio-Router-for-Windows/releases) page
 2. Extract the ZIP file to a folder (e.g., `C:\Program Files\MultiOutputAudioRouter`)
 3. Run `MultiOutputAudioRouter.exe`
 
