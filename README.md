@@ -171,3 +171,7 @@ If you find this project helpful, please consider:
 ---
 
 **Note**: This application is designed for personal use. Please respect copyright laws and terms of service when using with media content.
+
+If you have any questions or need assistance, feel free to open an issue on GitHub!
+
+Thank you for using Multi-Output Audio Router for Windows! Enjoy your enhanced audio experience!
